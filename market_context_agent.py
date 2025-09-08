@@ -68,6 +68,7 @@ class MarketContextAgent:
         
         # Track iterations for summary
         self.iterations = []
+        self.commentaries = []
         self.best_iteration = None
     
     def _create_tools(self) -> List[Tool]:
@@ -127,7 +128,8 @@ class MarketContextAgent:
                     SystemMessage(content=system_prompt),
                     HumanMessage(content=user_prompt)
                 ])
-                return f"COMMENTARY: {response.content}"
+                self.commentaries.append(response.content)
+                return f"{response.content}"
             except Exception as e:
                 return ERROR_MESSAGES["commentary_generation_error"].format(error=str(e))
         
@@ -361,50 +363,50 @@ class MarketContextAgent:
             if hasattr(self, 'iterations') and self.iterations and self.iterations[-1].get('commentary'):
                 return self.iterations[-1]['commentary']
             
-            # if "output" in result and result["output"]:
-            #     output = result["output"]
+            if "output" in result and result["output"]:
+                output = result["output"]
                 
-            #     if "Agent stopped due to iteration limit" in output or "Agent stopped before completing" in output:
-            #         best_commentary = None
-            #         best_score = 0.0
+                if "Agent stopped due to iteration limit" in output or "Agent stopped before completing" in output:
+                    best_commentary = None
+                    best_score = 0.0
                     
-            #         if "intermediate_steps" in result:
-            #             for step in result["intermediate_steps"]:
-            #                 if "observation" in step:
-            #                     observation = step["observation"]
-            #                     if "QUALITY_SCORE:" in observation:
-            #                         try:
-            #                             lines = observation.split('\n')
-            #                             for line in lines:
-            #                                 if line.startswith('QUALITY_SCORE:'):
-            #                                     score_text = line.replace('QUALITY_SCORE:', '').strip()
-            #                                     score = float(score_text)
-            #                                     if score > best_score:
-            #                                         best_score = score
-            #                                         if "IMPROVED_COMMENTARY:" in observation:
-            #                                             commentary_start = observation.find("IMPROVED_COMMENTARY:")
-            #                                             if commentary_start != -1:
-            #                                                 best_commentary = observation[commentary_start + len("IMPROVED_COMMENTARY:"):].strip()
-            #                         except (ValueError, IndexError):
-            #                             continue
-            #                     elif "Market Context" in observation and not best_commentary:
-            #                         best_commentary = observation
+                    if "intermediate_steps" in result:
+                        for step in result["intermediate_steps"]:
+                            if "observation" in step:
+                                observation = step["observation"]
+                                if "QUALITY_SCORE:" in observation:
+                                    try:
+                                        lines = observation.split('\n')
+                                        for line in lines:
+                                            if line.startswith('QUALITY_SCORE:'):
+                                                score_text = line.replace('QUALITY_SCORE:', '').strip()
+                                                score = float(score_text)
+                                                if score > best_score:
+                                                    best_score = score
+                                                    if "IMPROVED_COMMENTARY:" in observation:
+                                                        commentary_start = observation.find("IMPROVED_COMMENTARY:")
+                                                        if commentary_start != -1:
+                                                            best_commentary = observation[commentary_start + len("IMPROVED_COMMENTARY:"):].strip()
+                                    except (ValueError, IndexError):
+                                        continue
+                                elif "Market Context" in observation and not best_commentary:
+                                    best_commentary = observation
                     
-            #         if best_commentary:
-            #             return best_commentary
-            #         else:
-            #             if hasattr(self, 'best_iteration') and self.best_iteration.get('commentary'):
-            #                 return self.best_iteration['commentary']
-            #             elif hasattr(self, 'iterations') and self.iterations and self.iterations[-1].get('commentary'):
-            #                 return self.iterations[-1]['commentary']
-            #             return ERROR_MESSAGES["agent_stopped"]
-            #     return output
-            # else:
-            #     if hasattr(self, 'best_iteration') and self.best_iteration.get('commentary'):
-            #         return self.best_iteration['commentary']
-            #     elif hasattr(self, 'iterations') and self.iterations and self.iterations[-1].get('commentary'):
-            #         return self.iterations[-1]['commentary']
-            #     return ERROR_MESSAGES["no_output"]
+                    if best_commentary:
+                        return best_commentary
+                    else:
+                        if hasattr(self, 'best_iteration') and self.best_iteration.get('commentary'):
+                            return self.best_iteration['commentary']
+                        elif hasattr(self, 'iterations') and self.iterations and self.iterations[-1].get('commentary'):
+                            return self.iterations[-1]['commentary']
+                        return ERROR_MESSAGES["agent_stopped"]
+                return output
+            else:
+                if hasattr(self, 'best_iteration') and self.best_iteration.get('commentary'):
+                    return self.best_iteration['commentary']
+                elif hasattr(self, 'iterations') and self.iterations and self.iterations[-1].get('commentary'):
+                    return self.iterations[-1]['commentary']
+                return ERROR_MESSAGES["no_output"]
             
         except Exception as e:
             if hasattr(self, 'best_iteration') and self.best_iteration.get('commentary'):
@@ -418,6 +420,7 @@ class MarketContextAgent:
         if not hasattr(self, 'iterations') or not self.iterations:
             print("📭 No iterations found")
             return
+        
         
         print(f"\n📊 Iterations Summary ({len(self.iterations)} total)")
         print("=" * 80)

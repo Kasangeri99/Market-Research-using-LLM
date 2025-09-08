@@ -31,7 +31,7 @@ QUALITY LOOP REQUIREMENT:
    - If the score is below {quality_score_threshold}: 
      a) Use data_gatherer with the MISSING_DATA_PROMPTS from quality_review to gather the specific data needed
      b) Use commentary_generation with the improved version and response from data_gatherer as input
-     c) Use quality_review again to assess the new commentary
+     c) Mandatory step: Use quality_review again to assess the new commentary
 5. Repeat steps 4a-4c until you achieve a quality score of {quality_score_threshold} or higher
 6. If after 3 iterations the score remains below {quality_score_threshold}, accept the best version (highest score achieved) as your Final Answer
 7. Maximum iterations: {max_iterations} attempts to reach quality score {quality_score_threshold}+
@@ -142,7 +142,7 @@ DEFAULT_VALUES = {
     "custom_instructions": "",
     "model": "gpt-4o-mini",
     "temperature": 0.7,
-    "max_iterations": 5, 
+    "max_iterations": 10, 
     "quality_score_threshold": 10.0,
-    "word_count": 200,
+    "word_count": 400,
 }

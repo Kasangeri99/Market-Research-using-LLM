@@ -95,7 +95,7 @@ class CoreAgentRunner:
                 print(f"   Final Commentary Length: {len(result)} characters")
                 
                 # Show iteration summary
-                self._print_iteration_summary(job)
+                self.agent.print_iterations_summary()
                 
                 return AgentRunResult(
                     success=True,
@@ -200,90 +200,90 @@ class CoreAgentRunner:
             
             print(f"{job.job_id[:8]:<8} {job.strategy_name[:20]:<20} {job.quarter} {job.year:<4} {job.status.value:<12} {quality_str:<8} {created_str}")
     
-    def _print_iteration_summary(self, job):
-        """Print a summary of iterations with quality scores, word counts, and feedback."""
-        # Use agent's tracked iterations if available
-        if hasattr(self.agent, 'iterations') and self.agent.iterations:
-            print(f"\n📊 Iteration Summary:")
-            print("-" * 60)
+    # def _print_iteration_summary(self, job):
+    #     """Print a summary of iterations with quality scores, word counts, and feedback."""
+    #     # Use agent's tracked iterations if available
+    #     if hasattr(self.agent, 'iterations') and self.agent.iterations:
+    #         print(f"\n📊 Iteration Summary:")
+    #         print("-" * 60)
             
-            for i, iteration_data in enumerate(self.agent.iterations, 1):
-                # Check if this is the best iteration
-                is_best = (hasattr(self.agent, 'best_iteration') and 
-                          self.agent.best_iteration.get('quality_score') == iteration_data.get('quality_score'))
-                best_marker = " ⭐ BEST" if is_best else ""
+    #         for i, iteration_data in enumerate(self.agent.iterations, 1):
+    #             # Check if this is the best iteration
+    #             is_best = (hasattr(self.agent, 'best_iteration') and 
+    #                       self.agent.best_iteration.get('quality_score') == iteration_data.get('quality_score'))
+    #             best_marker = " ⭐ BEST" if is_best else ""
                 
-                print(f"Iteration {i}:{best_marker}")
+    #             print(f"Iteration {i}:{best_marker}")
                 
-                # Print quality score
-                if iteration_data.get('quality_score'):
-                    score = iteration_data['quality_score']
-                    score_class = "🟢" if score >= DEFAULT_VALUES["quality_score_threshold"] else "🟡" if score >= 7.0 else "🔴"
-                    print(f"  Quality Score: {score_class} {score}/10")
+    #             # Print quality score
+    #             if iteration_data.get('quality_score'):
+    #                 score = iteration_data['quality_score']
+    #                 score_class = "🟢" if score >= DEFAULT_VALUES["quality_score_threshold"] else "🟡" if score >= 7.0 else "🔴"
+    #                 print(f"  Quality Score: {score_class} {score}/10")
                 
-                # Print word count
-                if iteration_data.get('word_count'):
-                    word_count = iteration_data['word_count']
-                    print(f"  Word Count: {word_count} words")
+    #             # Print word count
+    #             if iteration_data.get('word_count'):
+    #                 word_count = iteration_data['word_count']
+    #                 print(f"  Word Count: {word_count} words")
                 
-                # Print feedback (truncated)
-                if iteration_data.get('quality_feedback'):
-                    feedback = iteration_data['quality_feedback']
-                    # Truncate feedback to first 100 characters
-                    truncated_feedback = feedback[:100] + "..." if len(feedback) > 100 else feedback
-                    print(f"  Feedback: {truncated_feedback}")
+    #             # Print feedback (truncated)
+    #             if iteration_data.get('quality_feedback'):
+    #                 feedback = iteration_data['quality_feedback']
+    #                 # Truncate feedback to first 100 characters
+    #                 truncated_feedback = feedback[:100] + "..." if len(feedback) > 100 else feedback
+    #                 print(f"  Feedback: {truncated_feedback}")
                 
-                # Print missing data requirements (truncated)
-                if iteration_data.get('missing_data_requirements'):
-                    missing_data = iteration_data['missing_data_requirements']
-                    # Truncate missing data to first 100 characters
-                    truncated_missing_data = missing_data[:100] + "..." if len(missing_data) > 100 else missing_data
-                    print(f"  Missing Data: {truncated_missing_data}")
+    #             # Print missing data requirements (truncated)
+    #             if iteration_data.get('missing_data_requirements'):
+    #                 missing_data = iteration_data['missing_data_requirements']
+    #                 # Truncate missing data to first 100 characters
+    #                 truncated_missing_data = missing_data[:100] + "..." if len(missing_data) > 100 else missing_data
+    #                 print(f"  Missing Data: {truncated_missing_data}")
                 
-                print()  # Empty line between iterations
-        else:
-            # Fallback to job iterations if agent tracking not available
-            if not job.iterations:
-                return
+    #             print()  # Empty line between iterations
+    #     else:
+    #         # Fallback to job iterations if agent tracking not available
+    #         if not job.iterations:
+    #             return
             
-            print(f"\n📊 Iteration Summary:")
-            print("-" * 60)
+    #         print(f"\n📊 Iteration Summary:")
+    #         print("-" * 60)
             
-            for i, iteration in enumerate(job.iterations, 1):
-                print(f"Iteration {i}:")
+    #         for i, iteration in enumerate(job.iterations, 1):
+    #             print(f"Iteration {i}:")
                 
-                # Find quality review tool execution
-                quality_tool = None
-                commentary_tool = None
+    #             # Find quality review tool execution
+    #             quality_tool = None
+    #             commentary_tool = None
                 
-                for tool_exec in iteration.tool_executions:
-                    if tool_exec.tool_name == "quality_review" and tool_exec.status.value == "completed":
-                        quality_tool = tool_exec
-                    elif tool_exec.tool_name == "commentary_generation" and tool_exec.status.value == "completed":
-                        commentary_tool = tool_exec
+    #             for tool_exec in iteration.tool_executions:
+    #                 if tool_exec.tool_name == "quality_review" and tool_exec.status.value == "completed":
+    #                     quality_tool = tool_exec
+    #                 elif tool_exec.tool_name == "commentary_generation" and tool_exec.status.value == "completed":
+    #                     commentary_tool = tool_exec
                 
-                # Print quality score
-                if quality_tool and quality_tool.metadata.get("quality_score"):
-                    score = quality_tool.metadata["quality_score"]
-                    score_class = "🟢" if score >= DEFAULT_VALUES["quality_score_threshold"] else "🟡" if score >= 7.0 else "🔴"
-                    print(f"  Quality Score: {score_class} {score}/10")
+    #             # Print quality score
+    #             if quality_tool and quality_tool.metadata.get("quality_score"):
+    #                 score = quality_tool.metadata["quality_score"]
+    #                 score_class = "🟢" if score >= DEFAULT_VALUES["quality_score_threshold"] else "🟡" if score >= 7.0 else "🔴"
+    #                 print(f"  Quality Score: {score_class} {score}/10")
                 
-                # Print word count
-                if commentary_tool and commentary_tool.metadata.get("word_count"):
-                    word_count = commentary_tool.metadata["word_count"]
-                    print(f"  Word Count: {word_count} words")
-                elif quality_tool and quality_tool.metadata.get("word_count"):
-                    word_count = quality_tool.metadata["word_count"]
-                    print(f"  Word Count: {word_count} words")
+    #             # Print word count
+    #             if commentary_tool and commentary_tool.metadata.get("word_count"):
+    #                 word_count = commentary_tool.metadata["word_count"]
+    #                 print(f"  Word Count: {word_count} words")
+    #             elif quality_tool and quality_tool.metadata.get("word_count"):
+    #                 word_count = quality_tool.metadata["word_count"]
+    #                 print(f"  Word Count: {word_count} words")
                 
-                # Print feedback (truncated)
-                if quality_tool and quality_tool.metadata.get("quality_feedback"):
-                    feedback = quality_tool.metadata["quality_feedback"]
-                    # Truncate feedback to first 100 characters
-                    truncated_feedback = feedback[:100] + "..." if len(feedback) > 100 else feedback
-                    print(f"  Feedback: {truncated_feedback}")
+    #             # Print feedback (truncated)
+    #             if quality_tool and quality_tool.metadata.get("quality_feedback"):
+    #                 feedback = quality_tool.metadata["quality_feedback"]
+    #                 # Truncate feedback to first 100 characters
+    #                 truncated_feedback = feedback[:100] + "..." if len(feedback) > 100 else feedback
+    #                 print(f"  Feedback: {truncated_feedback}")
                 
-                print()  # Empty line between iterations
+    #             print()  # Empty line between iterations
     
     def _extract_quality_score(self, commentary: str) -> float:
         """Extract quality score from commentary if available."""

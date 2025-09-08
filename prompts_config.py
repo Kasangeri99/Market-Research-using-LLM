@@ -30,7 +30,7 @@ QUALITY LOOP REQUIREMENT:
    - If the score is {quality_score_threshold} or higher: Provide the improved commentary as your Final Answer
    - If the score is below {quality_score_threshold}: 
      a) Use data_gatherer with the MISSING_DATA_PROMPTS from quality_review to gather the specific data needed
-     b) Use commentary_generation with the improved version and additional data as input
+     b) Use commentary_generation with the improved version and response from data_gatherer as input
      c) Use quality_review again to assess the new commentary
 5. Repeat steps 4a-4c until you achieve a quality score of {quality_score_threshold} or higher
 6. If after 3 iterations the score remains below {quality_score_threshold}, accept the best version (highest score achieved) as your Final Answer
@@ -58,97 +58,46 @@ The Market Context should be informative, well-structured, and demonstrate deep 
 Commentary should be around {word_count} words."""
 
 # Market Context Generation Prompt Template
-MARKET_CONTEXT_PROMPT_TEMPLATE = """Generate a Market Context section for the {strategy_name} portfolio commentary for {quarter} {year}.
+MARKET_CONTEXT_PROMPT_TEMPLATE = """Generate a Market Context section for {strategy_name} - {quarter} {year}.
 
-Strategy Details:
-- Strategy: {strategy_name}
-- Benchmark: {benchmark}
-- Period: {quarter} {year}
+Market Research: {market_research}
+The quality checker has provided the following feedback: {feedback}
+and the following additional data: {additional_data}
+Using the above feedback and additional data, improve or generate a new Market Context.
 
-Market Research Data:
-{market_research}
+Write a professional Market Context covering:
+1. Economic Overview (Fed policy, inflation, GDP)
+2. Market Performance (index performance, volatility)
+3. Sector Analysis (leaders/laggards, themes)
+4. Key Market Drivers (events, earnings)
 
-Please write a comprehensive Market Context section that covers:
+Target: ~{word_count} words, professional tone, specific data points.
 
-1. **Economic Overview**: Key economic indicators, Federal Reserve policy, inflation trends, and GDP growth
-2. **Market Performance**: Major index performance, volatility levels, and market sentiment
-3. **Sector Analysis**: Sector rotation, performance leaders and laggards, and key themes
-4. **Global Factors**: International market conditions, geopolitical events, and currency impacts
-5. **Market Drivers**: Key events, earnings trends, and factors that influenced market direction
-
-Guidelines:
-- Write in a professional, analytical tone
-- Use specific data points and percentages where relevant
-- Focus on what happened during the period, not predictions
-- Keep the content factual and objective
-- Structure the content with clear headings and bullet points
-- Aim for around {word_count} words of substantive content
-
-{additional_instructions}"""
+{additional_instructions}
+Provide structured response:
+COMMENTARY: [Market Context section]
+"""
 
 # Quality Review Prompt Template
-QUALITY_REVIEW_PROMPT_TEMPLATE = """Please review this Market Context section for {strategy_name}:
+QUALITY_REVIEW_PROMPT_TEMPLATE = """Review this Market Context for {strategy_name}:
 
 {commentary}
 
-Evaluate the commentary and provide a quality score, short feedback, and specific prompts for missing data.
+Provide structured response:
+QUALITY_SCORE: [Score 1-10]
+FEEDBACK: [Brief feedback on strengths/improvements]
+MORE_PROMPTS: [3-5 specific data prompts to improve commentary]
 
-IMPORTANT: Be generous with scoring. A well-structured, professional commentary with good market analysis should score 8.5-9.5. Only score below 8.0 if there are significant issues.
-
-Provide your response in the following EXACT format:
-
-QUALITY_SCORE: [Score out of 10]
-SHORT_FEEDBACK: [Brief feedback on strengths and areas for improvement - keep it concise]
-MISSING_DATA_PROMPTS: [3-5 specific prompts to gather missing data that would improve the commentary]
-
-For MISSING_DATA_PROMPTS, create specific, actionable prompts such as:
-- "What was the exact S&P 500 performance percentage for Q1 2024?"
-- "What were the specific technology sector performance metrics vs benchmark?"
-- "What percentage of S&P 500 companies beat earnings expectations in Q1 2024?"
-- "What was the VIX average for Q1 2024?"
-- "What were the specific inflation rates for March 2024?"
-
-Example:
-QUALITY_SCORE: 8.5
-SHORT_FEEDBACK: Good structure and professional tone. Missing specific data points and sector performance details. Needs more quantitative metrics.
-MISSING_DATA_PROMPTS: 1) What was the exact S&P 500 performance percentage for Q1 2024? 2) What were the specific technology sector performance metrics vs benchmark? 3) What percentage of S&P 500 companies beat earnings expectations? 4) What was the VIX average for Q1 2024? 5) What were the specific inflation rates for March 2024?"""
+Be generous with scoring (8.5-9.5 for good analysis)."""
 
 # Data Gatherer Prompt Template
-DATA_GATHERER_PROMPT_TEMPLATE = """Use the provided prompts to gather the missing data for the market context commentary.
+DATA_GATHERER_PROMPT_TEMPLATE = """Gather data for {strategy_name} - {quarter} {year}.
 
-Missing Data Prompts:
-{missing_data_prompts}
+Prompts: {missing_data_prompts}
+Feedback: {quality_feedback}
 
-Quality Feedback:
-{quality_feedback}
-
-Current Commentary:
-{current_commentary}
-
-Strategy Details:
-- Strategy: {strategy_name}
-- Quarter: {quarter}
-- Year: {year}
-- Benchmark: {benchmark}
-
-Using the provided prompts, gather the specific data needed to improve the commentary quality. Execute each prompt and collect the relevant information.
-
-Provide your response in the following EXACT format:
-
-DATA_GATHERING_RESULTS:
-1. [Result from first prompt]
-2. [Result from second prompt]
-3. [Result from third prompt]
-4. [Result from fourth prompt]
-5. [Result from fifth prompt]
-
-Example:
-DATA_GATHERING_RESULTS:
-1. S&P 500 performance for Q1 2024: +8.3%
-2. Technology sector performance vs S&P 500: +12.1% (outperformed by 3.8%)
-3. S&P 500 companies beating earnings expectations: 75%
-4. VIX average for Q1 2024: 18.5
-5. Inflation rate for March 2024: 3.2% year-over-year"""
+Provide response:
+DATA_RESPONSE: [Gathered data results]"""
 
 
 # Agent Input Prompt Template
@@ -163,26 +112,7 @@ Strategy Details:
 Please use the available tools to research market conditions and generate a comprehensive Market Context section. Make sure to provide the complete Market Context as your final answer."""
 
 # Market Research Tool Response Template
-MARKET_RESEARCH_RESPONSE_TEMPLATE = """Market Research Summary for {quarter} {year}:
-            
-Key Market Indicators:
-- S&P 500: Strong performance with technology sector leading
-- Federal Reserve: Maintained interest rates at current levels
-- Inflation: Continued moderation trend
-- Employment: Robust labor market conditions
-- Geopolitical: Ongoing tensions affecting market sentiment
-
-Sector Performance:
-- Technology: Leading sector performance
-- Healthcare: Solid gains
-- Financials: Moderate performance
-- Energy: Mixed results due to supply concerns
-
-Market Drivers:
-- Corporate earnings growth
-- Federal Reserve policy
-- Geopolitical developments
-- AI and technology innovation"""
+MARKET_RESEARCH_RESPONSE_TEMPLATE = """MARKET_RESEARCH: S&P 500 strong performance, tech sector leading, Fed rates maintained, inflation moderating, robust employment, geopolitical tensions affecting sentiment. Technology leading, healthcare solid, financials moderate, energy mixed. Key drivers: earnings growth, Fed policy, geopolitical events, AI innovation."""
 
 # Tool Descriptions
 TOOL_DESCRIPTIONS = {
@@ -212,7 +142,7 @@ DEFAULT_VALUES = {
     "custom_instructions": "",
     "model": "gpt-4o-mini",
     "temperature": 0.7,
-    "max_iterations": 10, 
-    "quality_score_threshold": 9.0,
-    "word_count": 400,
+    "max_iterations": 5, 
+    "quality_score_threshold": 10.0,
+    "word_count": 200,
 }

@@ -150,13 +150,7 @@ Currently data collection is from simulated data, that is hardcoded.
 - **Sentiment analysis** for tone appropriateness
 - **Readability scoring** for institutional standards
 
-### 3. Multi-Agent Coordination
-- **Specialist agents** for different market sectors
-- **Coordinator agent** for overall strategy
-- **Quality assurance agent** for final validation
-- **Research agent** for deep market analysis
-
-### 4. Enhanced User Experience
+### 3. Enhanced User Experience
 - **Web UI** with real-time progress tracking
 - **Batch processing** for multiple strategies
 - **Template customization** for different fund types
